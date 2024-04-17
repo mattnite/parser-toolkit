@@ -134,12 +134,14 @@ pub const matchers = struct {
 
     /// Takes characters while they are any of the given `chars`.
     pub fn takeAnyOfIgnoreCase(comptime chars: []const u8) Matcher {
-        const lower_chars = comptime blk: {
-            var buffer: [chars.len]u8 = undefined;
-            break :blk std.ascii.lowerString(&buffer, chars);
-        };
-
         return struct {
+            const lower_chars = blk: {
+                var buffer: [chars.len]u8 = undefined;
+                const ascii_string = std.ascii.lowerString(&buffer, chars);
+                const const_buffer = buffer;
+                break :blk const_buffer[0..ascii_string.len];
+            };
+
             fn match(str: []const u8) ?usize {
                 for (str, 0..) |c, i| {
                     const lc = std.ascii.toLower(c);
